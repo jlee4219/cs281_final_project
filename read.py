@@ -33,21 +33,20 @@ def read_tweets(train_file, test_file):
   for line in train:
     count = get_tweet(line, tweets, authors, vocab, count)
     lines += 1
-  print "Skipped:", float(count)/lines
-  # get_tweets(data, tweets, authors, vocab)
+  for line in test:
+    count = get_tweet(line, tweets, authors, vocab, count)
+    lines += 1
+  # print "Skipped:", float(count)/lines
   return vocab, tweets, authors
   train.close()
   test.close()
 
 # test code, no need to actually execute
-begin = time.time()
-vocab, tweets, authors = read_tweets("training_set_tweets.txt", "test_set_tweets.txt")
-vocab_file = open("twitter_train_vocab.txt", 'w')
+'''begin = time.time()
+vocab, tweets, authors = read_tweets("../training_set_tweets.txt", "../test_set_tweets.txt")
 vocab_list = list(vocab)
 vocab_list.sort()
-for i in vocab_list:
-  print i
+for i in range(len(vocab_list)):
   vocab_file.write(i)
-vocab_file.close()
 print len(vocab), len(tweets), len(authors)
-print "Time:", time.time() - begin
+print "Time:", time.time() - begin'''
