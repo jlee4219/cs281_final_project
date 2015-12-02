@@ -20,10 +20,11 @@ def main():
 
   # Create lowbow representation
   begin = time.time()
-  lowbows = np.zeros((len(tweets), len(vocab_list)))
   count = 0
   for tweet_id in tweets:
-    lowbows[count , :] = features.get_features(tweets[tweet_id], vocab_dict, 0.25)
-  print "Finished creating lowbows:", time.time() - begin
+    a = features.get_features(tweets[tweet_id], vocab_dict, 0.25)
+    print a.shape
+    break
+  print "Finished getting features:", time.time() - begin
 
 main()
