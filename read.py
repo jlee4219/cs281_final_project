@@ -8,6 +8,7 @@ def get_tweet(line, tweets, authors, vocab, count):
     count += 1
     return count
   try:
+    #line is userID, tweetID, tweet, date
     tweet = " ".join(line[2:-1])
     tweets[int(line[1])] = tweet
     authors[int(line[1])] = int(line[0])
