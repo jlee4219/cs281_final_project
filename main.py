@@ -11,7 +11,8 @@ from pprint import pprint
 def main():
   # Read the data from the text files
   begin = time.time()
-  vocab, tweets, authors = read.read_tweets("../training_set_tweets.txt", "../test_set_tweets.txt")
+  vocab, train, test = read.read_tweets("../training_set_tweets.txt", "../test_set_tweets.txt")
+  print "Train size:", len(train), "Test size:", len(test)
   print "Read data:", time.time() - begin
 
   # Assign ids to words
@@ -24,14 +25,34 @@ def main():
     vocab_dict[vocab_list[i]] = i
   print "Assigned ids to words:", time.time() - begin
 
-  # Create lowbow representation
-  begin = time.time()
+  # Build train and test set
+  num_full_feats = len(vocab_list) + 10
+  num_train_tweets = 0
+  num_test_tweets = 0
+  for author_id in train:
+    num_train_tweets += len(train[author_id])
+  for author_id in test:
+    num_test_tweets += len(test[author_id])
+  X_train = np.zeros(num_train_tweets, num_full_feats)
+  y_train = np.zeros(num_train_tweets)
+  X_test = np.zeros(num_test_tweets, num_full_feats)
+  y_test = np.zeros(num_test_tweets)
+
   count = 0
-  for tweet_id in tweets:
-    X_all = features.get_features(tweets[tweet_id], vocab_dict, 0.25)
-    print X_all.shape
-    break
-  print "Finished getting features:", time.time() - begin
+
+  for author_id in train:
+    for tweet in train[author_id]:
+      X_train[count, :] = get_full_feats(tweet, vocab)
+      y_train[count, :] = author_id
+      count += 1
+
+  count = 0
+  for author_id in test:
+    for tweet in test[author_id]:
+      X_test[count, :] = get_full_feats(tweet, vocab)
+      y_test[count, :] = author_id
+      count += 1
+
 
   clf = model.train(X_train, Y_train)
   acc, my_acc, preds, scores = model.test()
@@ -39,4 +60,8 @@ def main():
   print 'preds:', preds
   print 'scores:', scores
 
+
 main()
+
+
+
