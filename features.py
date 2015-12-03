@@ -2,6 +2,8 @@ import numpy as np
 from scipy.stats import norm
 import string
 
+print 'Imported Features.py'
+
 '''def lowbow(tweet, vocab, sigma):
   ret = np.zeros(len(vocab))
   words = tweet.split()
@@ -19,14 +21,14 @@ def kernel(mu, sigma, x1, x2):
   return (norm.cdf(x2, mu, sigma) - norm.cdf(x1, mu, sigma)) / C'''
 
 # bag of words representation
-def bow(tweet, vocab):
-  ret = np.zeros(len(vocab))
+def bow(tweet, vocab_dict):
+  ret = np.zeros(len(vocab_dict))
   words = tweet.split()
   for word in words:
     s = word.lower().strip()
     s = s.translate(string.maketrans("",""), string.punctuation)
-    if s and s in vocab:
-      ret[vocab[s]] += 1
+    if s and s in vocab_dict:
+      ret[vocab_dict[s]] += 1
   return ret
 
 # Create all count based features
@@ -62,4 +64,4 @@ def get_counts(tweet):
 # vocab is a dictionary from the lowercase words to their ids
 # sigma is a parameter for lowbow. We may want to generalize this.
 def get_full_feats(tweet, vocab):
-  return np.hstack((bag, get_counts(tweet)))
+  return np.hstack((bow(tweet, vocab), get_counts(tweet)))

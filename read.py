@@ -4,6 +4,8 @@ import string
 import numpy as np
 from sklearn import cross_validation
 
+print 'Imported read.py'
+
 def get_tweet(line, authors, vocab, seen_twice, count):
   line = line.split("\t")
   if len(line) < 4:
@@ -48,9 +50,11 @@ def read_tweets(train_file, test_file):
 
   best_authors = sorted([(author, len(authors[author])) for author in authors], key=lambda x:x[1], reverse=True)
   best_authors = [x[0] for x in best_authors]
-  for author in authors:
-    if not author in best_authors:
-      del authors[author]
+  best_authors = best_authors[:20]
+  authors = {k:v for (k,v) in authors.iteritems() if k in best_authors}
+  # for author in authors:
+  #   if not author in best_authors:
+  #     del authors[author]
   train_data, test_data = split_train_test(authors)
 
   train.close()
