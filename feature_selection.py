@@ -4,7 +4,7 @@ import numpy as np
 # data is a tweets X feats array
 # cutoffs determines feature presence. It is an array of size feats
 # num_feats determines the number of features to be selected
-def df(data, cutoffs, num_feats):
+def df(data, authors, cutoffs, num_feats):
   counts = np.zeros(data.shape[1])
 
   # for each feature, count the number of documents where the feature's above the cutoff
@@ -37,3 +37,10 @@ def odds_ratio(data, authors, cutoffs, num_feats):
       vals[feature, author] = float(a * d) / (c * b)
   vals = np.amax(vals, axis=1)
   return np.argpartition(vals, - num_feats)[-num_feats:]
+
+# generalized feature selection
+# method is a string representing the feature selection 
+methods = {'df':df, 'dia':dia, 'odds_ratio':odds_ratio}
+def select_features(selection_data, authors, cutoffs, num_feats, method):
+  idxs = methods[method](selection_data, authors, cutoffs, num_feats)
+  return idx
