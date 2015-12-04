@@ -6,7 +6,7 @@ from sklearn import cross_validation
 
 print 'Imported read.py'
 
-def get_tweet(line, authors, vocab, seen_twice, count):
+def get_tweet(line, authors, vocab, count):
   line = line.split("\t")
   if len(line) < 4:
     count += 1
@@ -14,12 +14,13 @@ def get_tweet(line, authors, vocab, seen_twice, count):
   try:
     #line is userID, tweetID, tweet, date
     tweet = " ".join(line[2:-1])
+    author_id = int(line[0])
     if not tweet:
       return count
-    if int(line[0]) in authors:
-      authors[int(line[0])].append(tweet)
+    if author_id in authors:
+      authors[author_id].append(tweet)
     else:
-      authors[int(line[0])] = [tweet]
+      authors[author_id] = [tweet]
 
     # to generate vocabulary, strip spaces and punctuation and make lowercase
     for word in tweet.split():
@@ -27,8 +28,9 @@ def get_tweet(line, authors, vocab, seen_twice, count):
       s = s.translate(string.maketrans("",""), string.punctuation)
       if s:
         if s in vocab:
-          seen_twice.add(s)
-        vocab.add(s)
+          vocab[s].add(author_id)
+        else:
+          vocab[s] = set([author_id])
   except ValueError:
     count += 1
   return count
@@ -36,17 +38,22 @@ def get_tweet(line, authors, vocab, seen_twice, count):
 def read_tweets(train_file, test_file):
   train = open(train_file, 'r')
   test = open(test_file, 'r')
-  vocab = set()
-  seen_twice = set()
+  vocab = {}
   authors = {}
   lines = 0
   count = 0
   for line in train:
-    count = get_tweet(line, authors, vocab, seen_twice, count)
+    count = get_tweet(line, authors, vocab, count)
     lines += 1
   for line in test:
-    count = get_tweet(line, authors, vocab, seen_twice, count)
+    count = get_tweet(line, authors, vocab, count)
     lines += 1
+
+  words = 0
+  better_vocab = set()
+  for word in vocab:
+    if len(vocab[word]) > 1:
+      better_vocab.add(word)
 
   best_authors = sorted([(author, len(authors[author])) for author in authors], key=lambda x:x[1], reverse=True)
   best_authors = [x[0] for x in best_authors]
@@ -59,7 +66,7 @@ def read_tweets(train_file, test_file):
 
   train.close()
   test.close()
-  return seen_twice, train_data, test_data
+  return better_vocab, train_data, test_data
 
 def split_train_test(authors):
   train = {}

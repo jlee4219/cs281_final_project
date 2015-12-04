@@ -53,8 +53,8 @@ def get_counts(tweet):
     total += 1
   char_counts = [punctuation, uppercase, whitespace, digits]
   word_counts = [tweet.count("\'"), tweet.count("#"), letters]
-  char_counts = map(lambda x: float(x) / total, char_counts)
-  word_counts = map(lambda x: float (x) / len(tweet.split()), word_counts)
+  char_counts = map(lambda x: float(x) / max(1, total), char_counts)
+  word_counts = map(lambda x: float (x) / max(1, len(tweet.split())), word_counts)
   ret = char_counts + word_counts
   lower = tweet.lower()
   ret = ret + [lower.count("co"), lower.count("me"), lower.count("we")]
@@ -65,3 +65,7 @@ def get_counts(tweet):
 # sigma is a parameter for lowbow. We may want to generalize this.
 def get_full_feats(tweet, vocab):
   return np.hstack((bow(tweet, vocab), get_counts(tweet)))
+
+# vocab_list representation
+def get_num_full_feats(vocab):
+  return len(vocab) + 10
