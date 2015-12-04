@@ -16,7 +16,7 @@ def train(X_train, Y_train):
 
 	# clf.probability = True #probs instead of scores
 
-	clf = svm.LinearSVC(penalty='l2', loss='squared_hinge', dual=True, tol=0.0001, C=1.0, multi_class='ovr', fit_intercept=True, intercept_scaling=1, class_weight=None, verbose=0, random_state=None, max_iter=1000)
+	clf = svm.LinearSVC()
 
 	clf.fit(X_train, Y_train)
 	return clf
