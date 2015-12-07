@@ -22,15 +22,6 @@ def get_tweet(line, authors, vocab, count):
     else:
       authors[author_id] = [tweet]
 
-    # to generate vocabulary, strip spaces and punctuation and make lowercase
-    for word in tweet.split():
-      s = word.lower().strip()
-      s = s.translate(string.maketrans("",""), string.punctuation)
-      if s:
-        if s in vocab:
-          vocab[s].add(author_id)
-        else:
-          vocab[s] = set([author_id])
   except ValueError:
     count += 1
   return count
@@ -42,31 +33,27 @@ def read_tweets(train_file, test_file):
   authors = {}
   lines = 0
   count = 0
+  start = time.time()
   for line in train:
     count = get_tweet(line, authors, vocab, count)
+    if lines % 100000 == 0:
+      start = time.time()
     lines += 1
   for line in test:
     count = get_tweet(line, authors, vocab, count)
+    if lines % 100000 == 0:
+      start = time.time()
     lines += 1
-
-  words = 0
-  better_vocab = set()
-  for word in vocab:
-    if len(vocab[word]) > 1:
-      better_vocab.add(word)
 
   best_authors = sorted([(author, len(authors[author])) for author in authors], key=lambda x:x[1], reverse=True)
   best_authors = [x[0] for x in best_authors]
   best_authors = best_authors[:20]
   authors = {k:v for (k,v) in authors.iteritems() if k in best_authors}
-  # for author in authors:
-  #   if not author in best_authors:
-  #     del authors[author]
   train_data, test_data = split_train_test(authors)
 
   train.close()
   test.close()
-  return better_vocab, train_data, test_data
+  return vocab, train_data, test_data
 
 def split_train_test(authors):
   train = {}

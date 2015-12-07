@@ -19,9 +19,10 @@ def main():
 
   # Preprocess the data
   begin = time.time()
-  vocab, train_word, test_word, train_char, test_char = preprocessing.preprocess(train_raw, test_raw)
+  vocab, bigrams, train_word, test_word, train_char, test_char = preprocessing.preprocess(train_raw, test_raw)
   print "Preprocessed the data", time.time() - begin
 
+  return
   # Assign ids to words
   vocab_list = list(vocab)
   vocab_list.sort()
