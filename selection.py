@@ -3,6 +3,7 @@ import time
 import sklearn
 import sklearn.svm as svm
 import sklearn.neural_network as nn
+import sklearn.feature_selection.chi2 as chi2
 from sklearn.svm import SVC, LinearSVC
 # from sklearn.neural_network import MLPClassifier
 
@@ -11,7 +12,7 @@ print 'Imported Selection.py'
 def selectSVM_RFE(X_train, Y_train, X_test, selectivity):
 	perc = 0.1
 	num_to_remove = int(perc * np.shape(X_train)[1])
-	features_to_remove = []
+	iters = (1-selectivity)/perc
 
 	#gives output as ovr shape, but really does ovo
 	# clf = svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
@@ -24,7 +25,7 @@ def selectSVM_RFE(X_train, Y_train, X_test, selectivity):
 	cutoff = selectivity * np.shape(X_train)[1]
 	print 'initial num of features:', num_features
 	print 'selectivity:', selectivity, 'cutoff:', cutoff
-	while num_features > cutoff:
+	while iters > 0:
 		clf = svm.LinearSVC(penalty='l2', loss='squared_hinge', dual=True, 
 		tol=0.0001, C=1.0, multi_class='ovr', fit_intercept=True, 
 		intercept_scaling=1, class_weight=None, verbose=0, 
@@ -50,6 +51,8 @@ def selectSVM_RFE(X_train, Y_train, X_test, selectivity):
 		X_test = np.delete(X_test, feature_indices[:num_to_remove], 1)
 		# features_to_remove.extend(feature_indices[:num_to_remove]) #indices of features
 
+		iters -= 1
+
 	return X_train, X_test
 
 
@@ -65,6 +68,9 @@ def selectNN(X_train, Y_train, selectivity):
  #    	warm_start=False)
 	# clf.fit(X, y) 
 
+	return
+
+def Chi2(X_train, Y_train, selectivity):
 	return
 
 

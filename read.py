@@ -59,9 +59,7 @@ def read_tweets(train_file, test_file):
   best_authors = [x[0] for x in best_authors]
   best_authors = best_authors[:20]
   authors = {k:v for (k,v) in authors.iteritems() if k in best_authors}
-  # for author in authors:
-  #   if not author in best_authors:
-  #     del authors[author]
+
   train_data, test_data = split_train_test(authors)
 
   train.close()
