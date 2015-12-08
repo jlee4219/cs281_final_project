@@ -57,19 +57,52 @@ def preprocess(train, test):
 	word_counts = defaultdict(int)
 	word_users = defaultdict(int)
 	vocab = set()
+	bigrams = set()
+	usage = {}
+	bigram_usage = {}
 
 	# to generate vocabulary, strip spaces and punctuation and make lowercase
 	for author in train_word:
-
 		for tweet in train_word[author]:
-			for word in tweet.split():
-				s = word.lower().strip()
-				s = s.translate(string.maketrans("",""), string.punctuation)
+			# to generate vocabulary, strip spaces and punctuation and make lowercase
+			cleaned_tweet = [word.lower().strip().translate(string.maketrans("",""), string.punctuation) for word in tweet.split()]
+			for i in range(len(cleaned_tweet)):
+				s = cleaned_tweet[i]
 				if s:
 					word_counts[s] += 1
+					if s in usage:
+						usage[s].add(author)
+					else:
+						usage[s] = set([author])
+					if i < len(cleaned_tweet) - 1:
+						s2 = cleaned_tweet[i + 1]
+						if (s, s2) in bigram_usage:
+							bigram_usage[(s, s2)].add(author)
+						else:
+							bigram_usage[(s, s2)] = set([author])
 	
+	counter = 0
+	used_once = 0
 	for word in word_counts:
-		if word_counts[word] > 1:
+		if word_counts[word] > 1 and len(usage[word]) > 1:
 			vocab.add(word)
+		if word_counts[word] > 1 and len(usage[word]) == 1:
+			counter += 1
+		if word_counts[word] <= 1:
+			used_once += 1
+	print "Words used in total:", len(word_counts)
+	print "Words used >1 by unique user:", counter
+	print "Words used by multiple users", len(vocab)
+	print "Words used once", used_once
 
-	return vocab, train_word, test_word, train_char, test_char
+	num_bigrams = 0
+	num_chosen = 0
+	for bigram in bigram_usage:
+		if len(bigram_usage[bigram]) > 1:
+			bigrams.add(bigram)
+			num_chosen += 1
+		num_bigrams += 1
+
+	print num_chosen, "bigrams chosen out of", num_bigrams
+
+	return vocab, bigrams, train_word, test_word, train_char, test_char

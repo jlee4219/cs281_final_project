@@ -31,6 +31,17 @@ def bow(tweet, vocab_dict):
       ret[vocab_dict[s]] += 1
   return ret
 
+def get_bigrams(tweet, bigram_dict):
+  ret = np.zeros(len(bigram_dict))
+  cleaned_tweet = [word.lower().strip().translate(string.maketrans("",""), string.punctuation) \
+                  for word in tweet.split()]
+  for i in range(len(cleaned_tweet) - 1):
+    s1 = cleaned_tweet[i]
+    s2 = cleaned_tweet[i + 1]
+    if s1 and s2 and (s1, s2) in bigram_dict:
+      ret[bigram_dict[(s1, s2)]] += 1
+  return ret
+
 # Create all count based features
 def get_counts(tweet):
   punctuation = 0
@@ -60,12 +71,14 @@ def get_counts(tweet):
   ret = ret + [lower.count("co"), lower.count("me"), lower.count("we")]
   return np.array(ret)
 
+# letters per word, whitespace, uppercase, punctuation, 'ref' 
+
 # tweet is the pure text of the tweet
 # vocab is a dictionary from the lowercase words to their ids
 # sigma is a parameter for lowbow. We may want to generalize this.
-def get_full_feats(tweet, vocab):
-  return np.hstack((bow(tweet, vocab), get_counts(tweet)))
+def get_full_feats(tweet, vocab, bigrams):
+  return np.hstack((bow(tweet, vocab), get_bigrams(tweet, bigrams), get_counts(tweet)))
 
 # vocab_list representation
-def get_num_full_feats(vocab):
-  return len(vocab) + 10
+def get_num_full_feats(vocab, bigrams):
+  return len(vocab) + len(bigrams) + 10
