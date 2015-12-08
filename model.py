@@ -2,7 +2,9 @@ import numpy as np
 import time
 import sklearn
 import sklearn.svm as svm
-from sklearn.svm import SVC, LinearSVC
+# from sklearn.svm import SVC, LinearSVC
+import my_svm2
+import my_nn
 
 print 'Imported model.py'
 
@@ -16,9 +18,13 @@ def train(X_train, Y_train):
 
 	# clf.probability = True #probs instead of scores
 
-	clf = svm.LinearSVC()
+	# clf = svm.LinearSVC()
+	# clf.fit(X_train, Y_train)
 
-	clf.fit(X_train, Y_train)
+	# clf = my_svm2.SVM()
+	clf = my_nn.NN()
+	clf.train(X_train, Y_train)
+
 	return clf
 
 def test(clf, X_test, Y_test):

@@ -8,15 +8,15 @@ def linear():
     return f
 
 class SVM():
-    def __init__(self, C = 1, K, b, w, E, alphas, C = 1, tol = 0.01, max_passes = 1000):
+    def __init__(self, C = 1, K, b, w, E, alphas, tol = 0.01, max_passes = 1000):
         self.C = C
         self.K = K
         self.b = b
         self.w = w
         self.E = E
         self.alphas = alphas
-        self.tol = 0.01
-        self.max_passes = 1000
+        self.tol = tol
+        self.max_passes = max_passes
 
 
     # def kernel_sum(X, Z, K):

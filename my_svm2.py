@@ -8,13 +8,10 @@ def linear():
     return f
 
 class SVM():
-    def __init__(self, C = 1, K, b, w, alphas, tol = 0.01, max_passes = 1000):
+    def __init__(self, K, C = 1, tol = 0.01, max_passes = 1000):
         self.C = C
         self.K = K
-        self.b = b
-        self.w = w
         self.E = {}
-        self.alphas = alphas
         self.tol = tol
         self.max_passes = max_passes
 
@@ -184,7 +181,7 @@ class SVM():
             else:
                 for i in self.unbound:
                     numAlphasChanged += examine(i)
-                if numAlphasChanged = 0:
+                if numAlphasChanged == 0:
                     examineAll = True
             pass_num += 1
 	
