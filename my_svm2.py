@@ -1,6 +1,7 @@
 import numpy as np
 import time
-# import numpy.random
+import random
+import numpy.random
 
 def linear():
     def f(x, z):
@@ -8,7 +9,7 @@ def linear():
     return f
 
 class SVM():
-    def __init__(self, C = 1, K, b, w, alphas, tol = 0.01, max_passes = 1000):
+    def __init__(self, C, K, b, w, alphas, tol = 0.01, max_passes = 1000):
         self.C = C
         self.K = K
         self.b = b
@@ -39,7 +40,7 @@ class SVM():
         elif self.alphas[ind2] > self.C - slack:
             return self.C
 
-    def getE(j):
+    def getE(self, j):
         if j in self.E:
             return self.E[j]
         else:
@@ -56,22 +57,25 @@ class SVM():
         #     return np.argmax(E)
         # else:
         #     return ind1
-        E1 = getE(ind1)
+        E1 = self.getE(ind1)
         for j in self.unbound:
-            E2 = getE(j)
+            E2 = self.getE(j)
             if abs(E1 - E2) > max_diff:
                 ind2 = j
                 max_diff = abs(E1 - E2)
         return ind2
 
     def take_step(self, ind1, ind2):
-        E1 = getE(ind1)
-        E2 = getE(ind2)
+        E1 = self.getE(ind1)
+        E2 = self.getE(ind2)
 
         if ind1 == ind2:
             return 0
         eps = 1e-3
-        eta = 2 * self.K(ind1, ind2) - self.K(ind1, ind1) - self.K(ind2, ind2)
+        K12 = self.K(self.X[ind1,:], self.X[ind2,:])
+        K11 = self.K(self.X[ind1,:], self.X[ind1,:])
+        K22 = self.K(self.X[ind2,:], self.X[ind2,:])
+        eta = 2 * K12 - K11 - K22
         assert eta <= 0
 
         L = max(0, self.alphas[ind2] - self.alphas[ind1])
@@ -84,14 +88,14 @@ class SVM():
             self.alphas[ind2] += self.y[ind2] * (E2 - E1)/eta
             self.alphas[ind2] = max(L, min(H, self.alphas[ind2]))
         elif eta == 0:
-            obj_L = 0.5 * eta * L**2 + (y[ind2] * (E1 - E2) - eta * a2_old) * L
-            obj_H = 0.5 * eta * H**2 + (y[ind2] * (E1 - E2) - eta * a2_old) * H
+            obj_L = 0.5 * eta * L**2 + (self.y[ind2] * (E1 - E2) - eta * a2_old) * L
+            obj_H = 0.5 * eta * H**2 + (self.y[ind2] * (E1 - E2) - eta * a2_old) * H
             if obj_L > obj_H + eps:
                 self.alphas[ind2] = L
             elif obj_L < obj_H - eps:
                 self.alphas[ind2] = H
         # Round
-        self.alphas[ind2] = roundoff(self.alphas, ind2, 1e-8)
+        self.alphas[ind2] = self.roundoff(ind2, 1e-8)
         if abs(self.alphas[ind2] - a2_old) < eps * (self.alphas[ind2] + a2_old + eps):
             return 0
         a2_delta = self.alphas[ind2] - a2_old
@@ -99,30 +103,33 @@ class SVM():
         self.alphas[ind1] += a1_delta
 
         # Update b
-        b1 = self.b - E1 - self.y[ind1] * a1_delta * self.K(self.X[ind1], self.X[ind1]) 
-        b1 -= self.y[ind2] * a2_delta * self.K(self.X[ind1], self.X[ind2])
-        b2 = self.b - E2 - self.y[ind1] * a1_delta * self.K(self.X[ind1], self.X[ind2]) 
-        b2 -= self.y[ind2] * a2_delta * self.K(self.X[ind2], self.X[ind2])
+        b1 = self.b - E1 - self.y[ind1] * a1_delta * K11
+        b1 -= self.y[ind2] * a2_delta * K12
+        b2 = self.b - E2 - self.y[ind1] * a1_delta * K12
+        b2 -= self.y[ind2] * a2_delta * K22
+        b_old = self.b
         if self.alphas[ind1] < self.C and self.alphas[ind1] > 0:
             self.b = b1
         elif self.alphas[ind2] < self.C and self.alphas[ind2] > 0:
             self.b = b2
         else:
             self.b = (b1 + b2) / 2.0
+
+        b_delta = self.b - b_old
         # print b1, b2
 
         #For a linear kernel
         self.w += a1_delta * self.y[ind1] * self.X[ind1] + a2_delta * self.y[ind2] * self.X[ind2]
 
         # Update errors
-        t1 = a1_delta * y[ind1]
-        t2 = a2_delta * y[ind2]
+        t1 = a1_delta * self.y[ind1]
+        t2 = a2_delta * self.y[ind2]
         error = 0
-        error += t1 * np.dot(X[ind1], X[ind1].T) 
-        error += t2 * np.dot(X[ind2], X[ind2].T)
+        error += t1 * np.dot(self.X[ind1,:], self.X[ind1,:].T) 
+        error += t2 * np.dot(self.X[ind2,:], self.X[ind2,:].T)
         error -= b_delta
         for i in self.unbound:
-            self.E[i] = getE(i) + error
+            self.E[i] = self.getE(i) + error
         # The error is now zero because we optimized for these points
         self.E[ind1] = 0
         self.E[ind2] = 0
@@ -131,28 +138,30 @@ class SVM():
 
     def examine(self, ind1):
         # ind1 = np.random.randint(n_data)
-        # ind2 = np.random.randint(n_data)
+        # ind2 = np.random.randint(n_data)se
         # for a linear SVM
-        E1 = getE(ind1)
+        E1 = self.getE(ind1)
+        r1 = E1 * self.y[ind1]
         # E1 = sum of alpha_i y_i <x_i, x> + b
 
         #Second Choice
         # If the first choice doesn't satisfy the KKT conditions
-        if ((self.alphas[ind1] < self.C and E1 < -self.tol) or (self.alphas[ind1] > 0 and E1 > self.tol)):
+        if ((self.alphas[ind1] < self.C and r1 < -self.tol) or (self.alphas[ind1] > 0 and r1 > self.tol)):
             if len(self.unbound) > 0:
                 ind2 = second_choice(ind1, E1)
                 if take_step(ind1, ind2):
                     return 1
-            rand_start = np.random.randint(len(self.unbound))
-            for j in len(self.unbound):
-                ind2 = self.unbound[(rand_start + j) % len(self.unbound)]
-                if take_step(ind1, ind2):
+                rand_start = np.random.randint(len(self.unbound))
+                for j in len(self.unbound):
+                    ind2 = self.unbound[(rand_start + j) % len(self.unbound)]
+                    if self.take_step(ind1, ind2):
+                        return 1
+            rand_start = np.random.randint(self.n_data)
+            for j in xrange(self.n_data):
+                ind2 = (rand_start + j) % self.n_data
+                if self.take_step(ind1, ind2):
                     return 1
-            rand_start = np.random.randint(n_data)
-            for j in xrange(n_data):
-                ind2 = (rand_start + j) % n_data
-                if take_step(ind1, ind2):
-                    return 1
+        return 0
 
 
     def train(self, X, y):
@@ -161,6 +170,7 @@ class SVM():
         self.y = y
 
     	n_data = X.shape[0]
+        self.n_data = n_data
         n_feat = X.shape[1]
     	self.b = 0
         self.alphas = np.zeros(n_data)
@@ -170,24 +180,31 @@ class SVM():
         numAlphasChanged = 0
         examineAll = True
         pass_num = 0
-        while (numAlphasChanged > 0 or examineAll) and pass_num < max_passes:
+        self.unbound = set()
+        while (numAlphasChanged > 0 or examineAll) and pass_num < self.max_passes:
             numAlphasChanged = 0
             if examineAll:
                 start = np.random.randint(n_data)
                 new_unbound = set()
                 for i in xrange(n_data):
-                    numAlphasChanged += examine(i)
-                    if is_unbound(alphas[i]):
+                    numAlphasChanged += self.examine(i)
+                    if self.is_unbound(self.alphas[i]):
                         new_unbound.add(i)
                 self.unbound = new_unbound #only update self.unbound here, perhaps should do it more often
                 examineAll = False
             else:
                 for i in self.unbound:
-                    numAlphasChanged += examine(i)
-                if numAlphasChanged = 0:
+                    numAlphasChanged += self.examine(i)
+                if numAlphasChanged == 0:
                     examineAll = True
             pass_num += 1
 	
+    def predict(self, X_test):
+        vals = np.dot(X_test, self.w) - self.b
+        vals[np.where(vals > 0)] = 1
+        vals[np.where(vals <= 0)] = -1
+        return vals
 
-
-
+    def get_pred_rate(self, X_test, y_test):
+        preds = self.predict(X_test)
+        return len(np.where(y_test == preds)[0]) / float(len(y_test))
