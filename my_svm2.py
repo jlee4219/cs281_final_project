@@ -198,9 +198,12 @@ class SVM():
                 if numAlphasChanged == 0:
                     examineAll = True
             pass_num += 1
+
+    def get_margin(self, X_test):
+        return np.dot(X_test, self.w) - self.b
 	
     def predict(self, X_test):
-        vals = np.dot(X_test, self.w) - self.b
+        vals = get_margin(X_test)
         vals[np.where(vals > 0)] = 1
         vals[np.where(vals <= 0)] = -1
         return vals
