@@ -13,61 +13,108 @@ class NN():
     def get_weights(self):
         return self.w1, self.w2
 
+    # Returns a k-dimensional vector
+    def softmax(x):
+        #w is a n_classes by n_feats
+        exps = np.exp(x)
+        return exps / np.sum(exps, axis=1, keepdims = True)
+
+    # The derivative turns out to be extremely simple when combined with entropy loss
+    # def softmax_deriv(w, x):
+
+    def tanh_deriv(tanh):
+        return (1 - np.power(tanh, 2))
+
     def sigmoid(x):
         return 1.0 / (1 + np.exp(-x))
 
     def sigmoid_deriv(sig):
         return sig * (1 - sig)
 
-    def perc_correct(preds, actual):
-        return np.mean(actual == [preds >= 0.5])
+    def perc_correct(probs, actuals):
+        preds = labels[np.argmax(probs, axis = 1)]
+        # actuals = np.nonzero(y)[1]
+        perc = np.mean([preds == actuals])
+        return perc
 
-    def train(self, X, y):
-        y = np.reshape(y, (y.shape[0], 1))
+    def fit(self, X, y):
+        # y is some index of the correct category
 
-        # X = np.array([[0, 0, 1],
-        #              [0, 1, 1],
-        #              [1, 0, 1],
-        #              [1, 1, 1]])
-        # y = np.array([[0],
-        #              [1],
-        #              [1],
-        #              [0]])
+        # y = np.reshape(y, (y.shape[0], 1))
+        self.n_classes = y.shape[1]
+        self.n_feats = X.shape[1]
+        self.n_data = X.shape[0]
 
         np.random.seed(1)
 
         #neural network has 2 hidden layers and X.shape[1] nodes in each layer
-        num_nodes = [X.shape[1], self.hidden_nodes, 1]
+        num_nodes = [self.n_feats, self.hidden_nodes, self.n_classes]
 
         #initialize layer weights
-        self.w1 = 2 * np.random.random((num_nodes[0], num_nodes[1])) - 1
-        self.w2 = 2 * np.random.random((num_nodes[1], num_nodes[2])) - 1
-        v1 = 0
-        v2 = 0
+        # self.w1 = 2 * np.random.random((num_nodes[0], num_nodes[1])) - 1
+        # self.w2 = 2 * np.random.random((num_nodes[1], num_nodes[2])) - 1
+        self.w1 = np.random.randn(num_nodes[0], num_nodes[1]) / np.sqrt(num_nodes[0])
+        self.b1 = np.zeros((1, num_nodes[1]))
+        self.w2 = np.random.randn(num_nodes[1], num_nodes[2]) / np.sqrt(num_nodes[1])
+        self.b2 = np.zeros((1, num_nodes[2]))
 
-        start_time = 0
+        begin = 0
         for i in xrange(self.num_iter):
+            lambd = 0.01
             alpha = self.alpha_0 * np.exp(-self.learning_const * i)
-        #     alpha = 0.5
+            # alpha = 0.5
             if i % (self.num_iter/10) == 0:
                 print 'Error:', np.mean(np.abs(l2_error))
                 print 'Percent correct:', perc_correct(l2, y)
-        #         print time.time() - start_time
-                start_time = time.time()
+                print time.time() - begin
+                begin = time.time()
             
-            l1 = sigmoid(np.dot(X, w1)) #num_data x num_nodes
-            l2 = sigmoid(np.dot(l1, w2)) #num_data x 1
-            
-            l2_error = l2 - y
-            l2_delta = l2_error * sigmoid_deriv(l2) # [4 x 1] dot [4 x 1]
-            
-            l1_error = np.dot(l2_delta, w2.T) #### [4 x 1] x [1 by 3]
-            l1_delta = l1_error * sigmoid_deriv(l1)
+            z1 = np.dot(X, self.w1) + self.b1 #n_data by n_hidden
+            a1 = np.tanh(z1)
+            z2 = np.dot(a1, self.w2) + self.b2 #n_data by n_classes
+            probs = softmax(z2)
 
-            # v2 = - alpha * np.dot(l1.T, l2_delta)
-            # v1 = - alpha * np.dot(X.T, l1_delta)
+            l2_delta = probs 
+            l2_delta[range(self.n_data), y] -= 1 #n_data by n_classes
+
+            l1_error = np.dot(l2_delta, self.w2.T)
+            l1_delta = l1_error * tanh_deriv(a1) #n_data by n_hidden
+
+            dW2 = np.dot(a1.T, l2_delta) #n_hidden by n_classes
+            db2 = np.sum(l2_delta, axis = 0, keepdims = True) #1 by n_classes
+            dW1 = np.dot(X.T, l1_delta)
+            db1 = np.sum(l1_delta, axis = 0)
+
+            dW2 += lambd * self.w2
+            dW1 += lambd * self.w1
+
+            self.w1 += -alpha * dW1
+            self.b1 += -alpha * db1
+            self.w2 += -alpha * dW2
+            self.b2 += -alpha * db2
+
             # Has momentum
-            v2 = self.mu * v2 - alpha * np.dot(l1.T, l2_delta)
-            v1 = self.mu * v1 - alpha * np.dot(X.T, l1_delta) #sum over all data points
-            self.w2 += v2
-            self.w1 += v1
+            # v2 = self.mu * v2 - alpha * np.dot(l1.T, l2_delta)
+            # v1 = self.mu * v1 - alpha * np.dot(X.T, l1_delta) #sum over all data points
+            # self.w2 += v2
+            # self.w1 += v1
+
+    def predict(self, X, y):
+        z1 = np.dot(X, self.w1) + self.b1
+        a1 = np.tanh(z1)
+        z2 = np.dot(a1, self.w2) + self.b2
+        probs = softmax(z2)
+
+    def score(self, X, y):
+        probs = self.predict(X, y)
+        return perc_correct(probs, y)
+
+
+
+        
+
+
+
+
+
+
