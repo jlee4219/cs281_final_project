@@ -54,7 +54,7 @@ def read_tweets(train_file, test_file):
 
   train.close()
   test.close()
-  return vocab, train_data, test_data
+  return authors, train_data, test_data
 
 def split_train_test(authors):
   train = {}

@@ -2,13 +2,12 @@ import numpy as np
 import time
 import sklearn
 import sklearn.svm as svm
-# from sklearn.svm import SVC, LinearSVC
 import my_svm2
-import my_nn
+import my_nn2
 
 print 'Imported model.py'
 
-def train(X_train, Y_train):
+def train(X_train, Y_train, classes):
 
 	#gives output as ovr shape, but really does ovo
 	# clf = svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
@@ -20,12 +19,12 @@ def train(X_train, Y_train):
 
 	# clf = svm.LinearSVC()
 	# clf = my_svm2.SVM()
-	clf = my_nn.NN()
+	clf = my_nn2.NN(classes)
 	clf.fit(X_train, Y_train)
 
 	return clf
 
-def test(clf, X_test, Y_test, confidence_cutoff = 5):
+def test(clf, X_test, Y_test):
 
 	preds = clf.predict(X_test)
 	acc = clf.score(X_test, Y_test)
