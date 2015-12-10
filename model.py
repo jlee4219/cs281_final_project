@@ -3,6 +3,7 @@ import time
 import sklearn
 import sklearn.svm as svm
 from sklearn.svm import SVC, LinearSVC
+from multiclass_svm import MultiClassSVM
 
 print 'Imported model.py'
 
@@ -16,13 +17,13 @@ def train(X_train, Y_train):
 
 	# clf.probability = True #probs instead of scores
 
-	clf = svm.LinearSVC()
+	clf = MultiClassSVM()
 
 	clf.fit(X_train, Y_train)
 	return clf
 
 def test(clf, X_test, Y_test):
-	confidence_cutoff = 1
+	'''confidence_cutoff = 1
 
 	scores = np.abs(clf.decision_function(X_test)) #n_samples by n_classes
 	# scores = clf.predict_proba(X_test) #probs instead of scores
@@ -33,6 +34,7 @@ def test(clf, X_test, Y_test):
 	for i in xrange(len(preds)):
 		if max(scores[i]) <= confidence_cutoff:
 			preds[i] = '-1'
-	my_acc = 1.0*sum(preds == Y_test)/len(Y_test)
+	my_acc = 1.0*sum(preds == Y_test)/len(Y_test)'''
+	acc = clf.score(X_test, Y_test)
 
 	return acc, my_acc, preds, scores
