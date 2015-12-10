@@ -7,7 +7,7 @@ import my_nn2
 
 print 'Imported model.py'
 
-def train(X_train, Y_train, classes):
+def train(X_train, Y_train, X_test, Y_test, classes):
 
 	#gives output as ovr shape, but really does ovo
 	# clf = svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
@@ -20,14 +20,14 @@ def train(X_train, Y_train, classes):
 	# clf = svm.LinearSVC()
 	# clf = my_svm2.SVM()
 	clf = my_nn2.NN(classes)
-	clf.fit(X_train, Y_train)
+	clf.fit(X_train, Y_train, X_test, Y_test)
 
 	return clf
 
 def test(clf, X_test, Y_test):
 
 	preds = clf.predict(X_test)
-	acc = clf.score(X_test, Y_test)
+	acc, error = clf.score(X_test, Y_test)
 
 	# scores = clf.decision_function(X_test) #n_samples by n_classes
 	# # scores = clf.predict_proba(X_test) #probs instead of scores
@@ -42,4 +42,4 @@ def test(clf, X_test, Y_test):
 	# recall = 1.0*confident_total/len(Y_test)
 	# print 'accuracy:', acc, 'confident_accuracy:', conf_acc, 'recall:', recall
 
-	return acc, preds
+	return acc, error, preds
