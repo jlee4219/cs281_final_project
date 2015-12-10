@@ -3,7 +3,6 @@ import time
 import sklearn
 import sklearn.svm as svm
 import sklearn.neural_network as nn
-from sklearn.feature_selection import chi2 as chi2
 from sklearn.svm import SVC, LinearSVC
 import my_svm2
 import my_nn2

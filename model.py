@@ -2,6 +2,8 @@ import numpy as np
 import time
 import sklearn
 import sklearn.svm as svm
+from sklearn.svm import SVC, LinearSVC
+from multiclass_svm import MultiClassSVM
 import my_svm2
 import my_nn2
 
