@@ -59,19 +59,21 @@ class NN():
         return 1./self.n_data * total_loss
 
     def fit(self, X, y, X_test, y_test):
-        # y is some index of the correct category
+        y = np.reshape(y, (y.shape[0], 1))
+        y_test = np.reshape(y_test, (y_test.shape[0], 1))
 
         begin = time.time()
         self.classes_dict = {}
         for i in xrange(len(self.classes)):
             self.classes_dict[self.classes[i]] = i
         print self.classes_dict
+        # y_inds are the indices of the correct categories
         y_inds = map(lambda x: self.classes_dict[x[0]], y)
 
         self.n_classes = len(self.classes)
         self.n_feats = X.shape[1]
         self.n_data = X.shape[0]
-        self.hidden_nodes = 2*self.n_classes
+        self.hidden_nodes = self.n_classes
 
         np.random.seed(1)
         #neural network has 2 hidden layers and X.shape[1] nodes in each layer
@@ -189,6 +191,7 @@ class NN():
         return np.argmax(probs, axis=1)
 
     def score(self, X, y):
+        y = np.reshape(y, (y.shape[0], 1))
         probs = self.predict_prob(X)
         y_inds = map(lambda x: self.classes_dict[x[0]], y)
         return self.perc_correct(probs, y_inds), self.calculate_loss(probs, y_inds)

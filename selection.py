@@ -57,9 +57,9 @@ def selectSVM_RFE(X_train, Y_train, X_test, selectivity):
 	return X_train, X_test
 
 
-def selectNN_RFE(X_train, Y_train, X_test, selectivity):
+def selectNN_RFE(X_train, Y_train, X_test, Y_test, selectivity):
 	classes = list(set(Y_train)) #DIFFERENT
-
+	print classes
 	perc = 0.1
 	num_to_remove = int(perc * np.shape(X_train)[1])
 	iters = (1-selectivity)/perc
@@ -71,12 +71,13 @@ def selectNN_RFE(X_train, Y_train, X_test, selectivity):
 	while iters > 0:
 		clf = my_nn2.NN(classes, num_iter = 10)
 
-		clf.fit(X_train, Y_train)
+		clf.fit(X_train, Y_train, X_test, Y_test)
 		w1, w2 = clf.get_weights() #DIFFERENT
-		coefs = w1
-		# comb_coefs = np.avg(coefs, axis = 0) #1 by n_features
-		# comb_coefs = np.max(coefs, axis = 0) #1 by n_features
-		comb_coefs = np.sum(coefs**2, axis = 0) #1 by n_features
+		coefs = w1 #n_features by n_hidden nodes
+		# comb_coefs = np.avg(coefs, axis = 0)
+		# comb_coefs = np.max(coefs, axis = 0)
+		comb_coefs = np.sum(coefs**2, axis = 1)
+		print 'coefs shape:', coefs.shape
 
 		comb_coefs = enumerate(comb_coefs)
 		sorted_coefs = sorted(comb_coefs, key=lambda x: x[1])
