@@ -2,8 +2,12 @@ import numpy as np
 import time
 import sklearn
 import sklearn.svm as svm
+<<<<<<< HEAD
 from sklearn.svm import SVC, LinearSVC
 from multiclass_svm import MultiClassSVM
+# from sklearn.svm import SVC, LinearSVC
+import my_svm2
+import my_nn
 
 print 'Imported model.py'
 
@@ -17,24 +21,26 @@ def train(X_train, Y_train):
 
 	# clf.probability = True #probs instead of scores
 
-	clf = MultiClassSVM()
-
+	clf = my_nn.NN()
 	clf.fit(X_train, Y_train)
 	return clf
 
-def test(clf, X_test, Y_test):
-	'''confidence_cutoff = 1
-
-	scores = np.abs(clf.decision_function(X_test)) #n_samples by n_classes
-	# scores = clf.predict_proba(X_test) #probs instead of scores
+def test(clf, X_test, Y_test, confidence_cutoff = 5):
 
 	preds = clf.predict(X_test)
 	acc = clf.score(X_test, Y_test)
 
-	for i in xrange(len(preds)):
-		if max(scores[i]) <= confidence_cutoff:
-			preds[i] = '-1'
-	my_acc = 1.0*sum(preds == Y_test)/len(Y_test)'''
-	acc = clf.score(X_test, Y_test)
+	# scores = clf.decision_function(X_test) #n_samples by n_classes
+	# # scores = clf.predict_proba(X_test) #probs instead of scores
+	# confident_total = 0
+	# confident_correct = 0
+	# for i in xrange(len(preds)):
+	# 	if max(abs(scores[i])) > confidence_cutoff:
+	# 		if preds[i] == Y_test[i]:
+	# 			confident_correct += 1
+	# 		confident_total += 1
+	# my_acc = 1.0*confident_correct/confident_total
+	# recall = 1.0*confident_total/len(Y_test)
+	# print 'accuracy:', acc, 'confident_accuracy:', conf_acc, 'recall:', recall
 
-	return acc, my_acc, preds, scores
+	return acc, preds

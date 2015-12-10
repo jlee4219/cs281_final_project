@@ -10,13 +10,10 @@ def linear():
     return f
 
 class SVM():
-    def __init__(self, C, K, b, w, alphas, tol = 0.01, max_passes = 1000):
-        self.C = C
+    def __init__(self, K, C = 1, tol = 0.01, max_passes = 1000):
         self.K = K
-        self.b = b
-        self.w = w
+        self.C = C
         self.E = {}
-        self.alphas = alphas
         self.tol = tol
         self.max_passes = max_passes
 
@@ -196,7 +193,7 @@ class SVM():
         return 0
 
 
-    def train(self, X, y):
+    def fit(self, X, y):
         random.seed(1)
         self.X = X
         self.y = y
@@ -251,6 +248,6 @@ class SVM():
         vals[np.where(vals <= 0)] = -1
         return vals
 
-    def get_pred_rate(self, X_test, y_test):
+    def score(self, X_test, y_test):
         preds = self.predict(X_test)
         return len(np.where(y_test == preds)[0]) / float(len(y_test))
